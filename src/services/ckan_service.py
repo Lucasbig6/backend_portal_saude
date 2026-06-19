@@ -124,6 +124,125 @@ class CKANService:
     def excluir_grupo(self, group_id: str) -> Dict:
         """Remove um grupo."""
         return self._execute("group_delete", id=group_id)
+    
+    # =================
+    # TAGS
+    # =================
+
+    def listar_tags(self) -> List[str]:
+        """Lista todas as tags cadastradas."""
+        return self._execute("tag_list")
+
+    def obter_tag(self, tag_id: str) -> Dict:
+        """Busca detalhes de uma tag."""
+        return self._execute("tag_show", id=tag_id)
+
+    def buscar_datasets_por_tag(self, tag: str) -> Dict:
+        """Lista datasets associados a uma tag."""
+        return self._execute(
+            "package_search",
+            fq=f"tags:{tag}"
+        )
+    
+    # ==================
+    # Busca
+    # ==================
+
+    def buscar(self, termo: str, page: int = 1, limit: int = 20) -> Dict:
+        """Buscar datasets no CKAN"""
+        start = (page - 1) * limit
+
+        return self._execute(
+            "package_search",
+            q=termo,
+            rows=limit,
+            start=start,
+            include_private=True
+        )
+ 
+
+    # ==============
+    # Upload de arquivos
+    # ==============
+
+    def upload_resource(
+        self,
+        package_id: str,
+        file,
+        name: str | None = None,
+        description: str | None = None
+    ):
+        """Faz Upload de um arquivo para um dataset."""
+        
+        dados = {
+            "package_id": package_id,
+            "upload": file
+        }
+
+        if name:
+            dados["name"] = name
+
+        if description:
+            dados["description"] = description
+
+        return self._execute(
+            "resource_create",
+            **dados
+        )
+    
+    # =================
+    # Estatisticas
+    # =================
+
+    def obter_estatisticas(self) -> dict:
+
+        datasets = self._execute(
+            "package_search",
+            rows=100,
+            sort="metadata_modified desc",
+            include_private=True
+        )
+
+        organizacoes = self._execute(
+            "organization_list",
+            all_fields=True
+        )
+
+        grupos = self._execute(
+            "group_list"
+        )
+
+        tags = self._execute(
+            "tag_list"
+        )
+
+        orgs_ativas = []
+
+        for org in organizacoes[:5]:
+            orgs_ativas.append({
+                "nome": org["title"] if org.get("title") else org["name"],
+                "datasets": org.get("package_count", 0)
+            })
+
+        orgs_ativas.sort(
+            key=lambda x: x["datasets"],
+            reverse=True
+        )
+
+        return {
+            "total_datasets": datasets.get("count", 0),
+            "total_organizacoes": len(organizacoes),
+            "total_grupos": len(grupos),
+            "total_tags": len(tags),
+
+            "datasets_recentes": len(
+                datasets.get("results", [])[:5]
+            ),
+
+            "organizacoes_mais_ativas": orgs_ativas[:5],
+
+            "tags_populares": tags[:10]
+        }
 
 if __name__ == "__main__":
     service = CKANService()
