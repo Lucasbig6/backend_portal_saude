@@ -10,55 +10,55 @@ from src.routes.upload import router as upload_router
 from src.routes.estatisticas import router as estatisticas_router
 
 app = FastAPI(
-    title="Camada de API de conexão CKAN",
+    title="Portal de Dados da Saúde API",
     description="Camada de conexão entre o CKAN e frontend.",
-    version="0.0.1"
+    version="1.0.0"
 )
 
 app.include_router(
     org_router,
-    prefix="/organizacoes",
+    prefix="/api/v1/organizacoes",
     tags=["Organizações"]
 )
 
 app.include_router(
     cd_router,
-    prefix="/conjuntos-dados",
+    prefix="/api/v1/conjuntos-dados",
     tags=["Conjuntos de dados"]
 )
 
 app.include_router(
     resources_router,
-    prefix="/recursos",
+    prefix="/api/v1/recursos",
     tags=["Recursos / Arquivos"]
 )
 
 app.include_router(
     grupos_router,
-    prefix="/grupos",
+    prefix="/api/v1/grupos",
     tags=["Grupos"]
 )
 
 app.include_router(
     tags_router,
-    prefix="/tags",
+    prefix="/api/v1/tags",
     tags=["Tags"]
 )
 
 app.include_router(
     busca_router,
-    prefix="/busca",
+    prefix="/api/v1/busca",
     tags=["Bucar Dados"]
 )
 
 app.include_router(
     upload_router,
-    prefix="/upload",
+    prefix="/api/v1/upload",
     tags=["Upload de arquivos"]
 )
 
 app.include_router(
     estatisticas_router,
-    prefix="/estatisticas",
+    prefix="/api/v1/estatisticas",
     tags=["Estatísticas"]
 )
